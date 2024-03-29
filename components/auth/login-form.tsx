@@ -1,4 +1,4 @@
-import { CardWrapper } from "./card-wrapper"
+import { CardWrapper } from "@/components/auth/card-wrapper"
 
 const LoginForm = () => {
   return (
@@ -6,6 +6,7 @@ const LoginForm = () => {
       headerLabel="Willkommen zurück"
       backButtonLabel="Du hast noch keinen Zugang?"
       backButtonHref="/auth/register"
+      showSocial
     >
       <span>dsfdfdf</span>
     </CardWrapper>
