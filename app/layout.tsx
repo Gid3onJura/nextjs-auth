@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <body className={cn("min-h-screen bg-background antialiased", nunitoFont.variable)}>{children}</body>
+      <body className={cn("min-h-screen bg-sky-500 antialiased", nunitoFont.variable)}>{children}</body>
     </html>
   )
 }
