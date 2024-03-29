@@ -11,6 +11,8 @@ import { CardWrapper } from "@/components/auth/card-wrapper"
 import { FormInput } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "../ui/button"
+import FormError from "../form-error"
+import FormSuccess from "../form-success"
 
 const LoginForm = () => {
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -62,6 +64,8 @@ const LoginForm = () => {
               )}
             />
           </div>
+          <FormError message="" />
+          <FormSuccess message="" />
           <Button type="submit" className="w-full">
             Login
           </Button>
