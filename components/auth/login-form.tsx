@@ -13,18 +13,24 @@ import { Input } from "@/components/ui/input"
 import { Button } from "../ui/button"
 import FormError from "../form-error"
 import FormSuccess from "../form-success"
+import { useTransition } from "react"
+import { login } from "@/actions/login"
 
 const LoginForm = () => {
+  const [isPending, startTransition] = useTransition()
+
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
-      email: "",
+      nickname: "",
       password: "",
     },
   })
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-    console.log(values)
+    startTransition(async () => {
+      login(values)
+    })
   }
 
   return (
@@ -39,12 +45,12 @@ const LoginForm = () => {
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="email"
+              name="nickname"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Nickname</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="web@web.de" type="email" />
+                    <Input {...field} disabled={isPending} placeholder="johndoe" type="text" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -57,7 +63,7 @@ const LoginForm = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="******" type="password" />
+                    <Input {...field} disabled={isPending} placeholder="******" type="password" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -66,7 +72,7 @@ const LoginForm = () => {
           </div>
           <FormError message="" />
           <FormSuccess message="" />
-          <Button type="submit" className="w-full">
+          <Button type="submit" disabled={isPending} className="w-full">
             Login
           </Button>
         </form>
