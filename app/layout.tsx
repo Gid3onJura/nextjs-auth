@@ -22,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="de">
-      <body className={cn("min-h-screen bg-sky-500 antialiased", nunitoFont.variable)}>{children}</body>
+    <html className="h-full" lang="de">
+      <body className={cn("h-full bg-sky-500 antialiased", nunitoFont.variable)}>{children}</body>
     </html>
   )
 }
