@@ -11,6 +11,8 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
       return { error: "Angaben falsch" }
     }
 
+    const { name, nickname, password } = validatedFields.data
+
     return { success: "Registrierung erfolgreich" }
   } catch (err) {
     console.log(err)

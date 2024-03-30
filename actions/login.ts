@@ -2,6 +2,14 @@
 
 import { LoginSchema } from "@/schemas"
 import * as z from "zod"
+import { jwtDecode } from "jwt-decode"
+
+interface JwTProps {
+  id: number
+  nickname: string
+  iat: number
+  exp: number
+}
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
   try {
@@ -25,10 +33,12 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
         "Content-Type": "application/json",
         "api-key": apikey,
       },
-      body: JSON.stringify(values),
+      body: JSON.stringify(validatedFields.data),
     })
     const result = await response.json()
     if (result && result.accessToken) {
+      const decodedJwt = jwtDecode<JwTProps>(result.accessToken)
+
       return { success: "Login erfolgreich" }
     }
     return { error: "Login nicht erfolgreich" }
