@@ -13,10 +13,12 @@ import { Input } from "@/components/ui/input"
 import { Button } from "../ui/button"
 import FormError from "../form-error"
 import FormSuccess from "../form-success"
-import { useTransition } from "react"
+import { useState, useTransition } from "react"
 import { login } from "@/actions/login"
 
 const LoginForm = () => {
+  const [errorMessage, setErrorMessage] = useState<string | undefined>("")
+  const [successMessage, setSuccessMessage] = useState<string | undefined>("")
   const [isPending, startTransition] = useTransition()
 
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -28,8 +30,12 @@ const LoginForm = () => {
   })
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+    setErrorMessage("")
+    setSuccessMessage("")
     startTransition(async () => {
-      login(values)
+      const loginResponse = await login(values)
+      setErrorMessage(loginResponse.error)
+      setSuccessMessage(loginResponse.success)
     })
   }
 
@@ -70,8 +76,8 @@ const LoginForm = () => {
               )}
             />
           </div>
-          <FormError message="" />
-          <FormSuccess message="" />
+          <FormError message={errorMessage} />
+          <FormSuccess message={successMessage} />
           <Button type="submit" disabled={isPending} className="w-full">
             Login
           </Button>
