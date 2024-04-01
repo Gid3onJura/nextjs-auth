@@ -2,19 +2,98 @@ import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 
 import { LoginSchema } from "@/schemas"
+import { cookies } from "next/headers"
+import { jwtDecode } from "jwt-decode"
+import { sign } from "jsonwebtoken"
+
+interface JwTProps {
+  id: number
+  nickname: string
+  iat: number
+  exp: number
+}
+
+interface User {
+  id: string
+  nickname: string
+}
 
 export default {
   providers: [
     Credentials({
-      // credentials: {
-      //   username: { label: "Username" },
-      //   password: {  label: "Password", type: "password" }
-      // },
-      async authorize(credentials) {
-        const validateFields = LoginSchema.safeParse(credentials)
+      async authorize(credentials): Promise<User | null> {
+        try {
+          const validatedFields = LoginSchema.safeParse(credentials)
 
-        if (validateFields.success) {
-          const { nickname, password } = validateFields.data
+          if (validatedFields.success) {
+            const url = process.env.API_BASE_URL + "/login"
+
+            const apikey = process.env.API_KEY || null
+
+            if (!apikey) {
+              return null
+            }
+
+            // api login
+            const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "api-key": apikey,
+              },
+              body: JSON.stringify(validatedFields.data),
+            })
+
+            // get access token
+            const result = await response.json()
+
+            if (result && result.accessToken) {
+              // get nickname
+              const userNickname = validatedFields.data.nickname
+
+              // user data decoded
+              const decodedJwt = jwtDecode<JwTProps>(result.accessToken)
+
+              const accessToken = result.accessToken || ""
+
+              // create cookie
+              const jwtSecret = process.env.JWT_SECRET || ""
+
+              const cookieToken = sign(
+                {
+                  accessToken,
+                },
+                jwtSecret,
+                {
+                  expiresIn: process.env.JWT_LIFETIME,
+                }
+              )
+
+              const cookieName = process.env.JWT_COOKIE_NAME || "SDK_USER_COOKIE"
+
+              const cookieLifetime = process.env.JWT_LIFETIME || 604800
+
+              // save cookie
+              cookies().set({
+                name: cookieName,
+                value: cookieToken,
+                httpOnly: true,
+                path: "/",
+                maxAge: decodedJwt.exp,
+                sameSite: "strict",
+                secure: process.env.NODE_ENV === "production",
+              })
+
+              return {
+                id: decodedJwt.id.toString(),
+                nickname: decodedJwt.nickname,
+              }
+            }
+          }
+          return null
+        } catch (error) {
+          console.log(error)
+          return null
         }
       },
     }),

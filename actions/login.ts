@@ -2,49 +2,40 @@
 
 import { LoginSchema } from "@/schemas"
 import * as z from "zod"
-import { jwtDecode } from "jwt-decode"
-
-interface JwTProps {
-  id: number
-  nickname: string
-  iat: number
-  exp: number
-}
+import { signIn } from "@/auth"
+import { DEFAULT_LOGIN_REDIRECT_URL } from "@/routes"
+import { AuthError } from "next-auth"
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
   try {
+    // validate input values
     const validatedFields = LoginSchema.safeParse(values)
 
     if (!validatedFields.success) {
       return { error: "Angaben falsch" }
     }
 
-    const url = process.env.API_BASE_URL + "/login"
+    const { nickname, password } = validatedFields.data
 
-    const apikey = process.env.API_KEY || null
+    try {
+      await signIn("credentials", {
+        nickname,
+        password,
+        redirectTo: DEFAULT_LOGIN_REDIRECT_URL,
+      })
+    } catch (error) {
+      if (error instanceof AuthError) {
+        switch (error.type) {
+          case "CredentialsSignin":
+            return { error: "Überprüfe deine Eingaben!" }
+          default:
+            return { error: "Etwas lief schief!" }
+        }
+      }
 
-    if (!apikey) {
-      return { error: "Login nicht möglich" }
+      throw error
     }
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apikey,
-      },
-      body: JSON.stringify(validatedFields.data),
-    })
-    const result = await response.json()
-    if (result && result.accessToken) {
-      const decodedJwt = jwtDecode<JwTProps>(result.accessToken)
-
-      console.log(result)
-      console.log(decodedJwt)
-
-      return { success: "Login erfolgreich" }
-    }
-    return { error: "Login nicht erfolgreich" }
+    return { error: "Etwas lief schief!" }
   } catch (err) {
     console.log(err)
     return { error: "Login nicht erfolgreich" }
