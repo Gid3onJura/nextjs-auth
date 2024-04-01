@@ -39,6 +39,9 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     if (result && result.accessToken) {
       const decodedJwt = jwtDecode<JwTProps>(result.accessToken)
 
+      console.log(result)
+      console.log(decodedJwt)
+
       return { success: "Login erfolgreich" }
     }
     return { error: "Login nicht erfolgreich" }
