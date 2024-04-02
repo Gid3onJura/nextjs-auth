@@ -1,12 +1,12 @@
-import { signOut } from "@/auth"
+import { auth, signOut } from "@/auth"
 import { getUser } from "@/data/user"
 
 const HomePage = async () => {
-  const user = await getUser()
+  const session = await auth()
 
   return (
     <div>
-      {JSON.stringify(user)}
+      {JSON.stringify(session)}
       <form
         action={async () => {
           "use server"
