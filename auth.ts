@@ -10,6 +10,9 @@ export const {
   signOut,
 } = NextAuth({
   callbacks: {
+    async signIn({ user }) {
+      return true
+    },
     async session({ session, token }) {
       console.log({ sessionToken: token, session })
 
