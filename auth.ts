@@ -11,6 +11,13 @@ export const {
 } = NextAuth({
   callbacks: {
     async signIn({ user }) {
+      console.log({ user })
+
+      const existingUser = await getUser()
+
+      if (!existingUser || !existingUser.activated) {
+        return false
+      }
       return true
     },
     async session({ session, token }) {
@@ -37,6 +44,8 @@ export const {
       if (!user) return token
 
       token.role = user.role ?? "USER"
+
+      console.log("token:", { token })
 
       return token
     },

@@ -34,7 +34,10 @@ const LoginForm = () => {
     startTransition(async () => {
       const loginResponse = await login(values)
       setErrorMessage(loginResponse.error)
-      setSuccessMessage(loginResponse.success)
+
+      // if (loginResponse.success) {
+      //   setSuccessMessage(loginResponse.success)
+      // }
     })
   }
 
@@ -43,7 +46,6 @@ const LoginForm = () => {
       headerLabel="Willkommen zurück"
       backButtonLabel="Du hast noch keinen Zugang?"
       backButtonHref="/auth/register"
-      showSocial
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
