@@ -6,7 +6,7 @@ interface ProctectedLayoutProps {
 
 const ProctectedLayout = ({ children }: ProctectedLayoutProps) => {
   return (
-    <div className="h-full  w-full flex flex-col justify-center items-center bg-sky-500 antialiased gap-y-10">
+    <div className="h-full  w-full flex flex-col items-center bg-sky-500 antialiased gap-y-10">
       <Navbar />
       {children}
     </div>
