@@ -86,13 +86,13 @@ const HomePage = () => {
     e.preventDefault()
 
     const payload = {
-      name,
-      type,
-      date: startDate?.toISOString().split("T")[0] || "",
-      start: `${startDate?.toISOString().split("T")[0]}T${startTime}`,
-      end: `${endDate?.toISOString().split("T")[0]}T${endTime}`,
+      description: name,
+      eventtype: type,
+      eventdate: startDate?.toISOString().split("T")[0] || "",
+      eventdatetimefrom: `${startDate?.toISOString().split("T")[0]}T${startTime}`,
+      eventdatetimeto: `${endDate?.toISOString().split("T")[0]}T${endTime}`,
       deadline: `${deadline?.toISOString().split("T")[0]}T${deadlineTime}`,
-      options,
+      options: options,
     }
 
     console.log("====================================")
@@ -211,7 +211,7 @@ const HomePage = () => {
             <Label>Optionen</Label>
             <div className="flex gap-2">
               <Input
-                placeholder="Option hinzufügen (z. B. Vegetarisch)"
+                placeholder="Option hinzufügen (z. B. bleibe zum Essen, etc.)"
                 value={newOption}
                 onChange={(e) => setNewOption(e.target.value)}
                 onKeyDown={(e) => {
