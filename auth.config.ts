@@ -65,7 +65,7 @@ export default {
                 },
                 jwtSecret,
                 {
-                  expiresIn: process.env.JWT_LIFETIME,
+                  expiresIn: decodedJwt.exp,
                 }
               )
 

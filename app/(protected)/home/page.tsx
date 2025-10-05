@@ -24,7 +24,7 @@ type Event = {
   eventdatetimeto: string
   eventyear: string
   eventtype: string
-  eventoptions: string[]
+  options: string[]
 }
 
 const HomePage = () => {
@@ -88,32 +88,37 @@ const HomePage = () => {
     const payload = {
       name,
       type,
+      date: startDate?.toISOString().split("T")[0] || "",
       start: `${startDate?.toISOString().split("T")[0]}T${startTime}`,
       end: `${endDate?.toISOString().split("T")[0]}T${endTime}`,
       deadline: `${deadline?.toISOString().split("T")[0]}T${deadlineTime}`,
       options,
     }
 
-    try {
-      const res = await fetch(process.env.API_BASE_URL + "/event/reduced", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-      const created = await res.json()
-      setEvents((prev) => [...prev, created])
-      // Formular zurücksetzen
-      setName("")
-      setStartDate(undefined)
-      setStartTime("")
-      setEndDate(undefined)
-      setEndTime("")
-      setDeadline(undefined)
-      setDeadlineTime("")
-      setOptions([])
-    } catch (err) {
-      console.error("Fehler beim Erstellen des Events:", err)
-    }
+    console.log("====================================")
+    console.log(payload)
+    console.log("====================================")
+
+    // try {
+    //   const res = await fetch(process.env.API_BASE_URL + "/event", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify(payload),
+    //   })
+    //   const created = await res.json()
+    //   setEvents((prev) => [...prev, created])
+    //   // Formular zurücksetzen
+    //   setName("")
+    //   setStartDate(undefined)
+    //   setStartTime("")
+    //   setEndDate(undefined)
+    //   setEndTime("")
+    //   setDeadline(undefined)
+    //   setDeadlineTime("")
+    //   setOptions([])
+    // } catch (err) {
+    //   console.error("Fehler beim Erstellen des Events:", err)
+    // }
   }
 
   // --- Event löschen ---
@@ -280,6 +285,18 @@ const HomePage = () => {
                     Anmeldeschluss:{" "}
                     {event.deadline ? format(new Date(event.deadline), "dd.MM.yyyy HH:mm", { locale: de }) : "-"}
                   </p>
+
+                  {/* 🧩 Optionen */}
+                  {event.options && event.options.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs font-semibold text-muted-foreground">Optionen:</p>
+                      <ul className="ml-3 list-disc text-xs text-muted-foreground">
+                        {event.options.map((opt: any) => (
+                          <li key={opt.id}>{opt.description}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
                 <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(event.id)}>
                   <X className="h-4 w-4" />
