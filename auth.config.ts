@@ -53,17 +53,12 @@ export default {
             const result = await response.json()
 
             if (result && result.accessToken) {
-              // get nickname
               const userNickname = validatedFields.data.nickname
-
-              // user data decoded
               const decodedJwt = jwtDecode<JwTProps>(result.accessToken)
-
               const accessToken = result.accessToken || ""
-
-              // create cookie
               const jwtSecret = process.env.JWT_SECRET || ""
-
+              const cookieLifetime = parseInt(process.env.JWT_LIFETIME || "604800", 10)
+              const cookieName = process.env.JWT_COOKIE_NAME || "SDK_USER_COOKIE"
               const cookieToken = sign(
                 {
                   accessToken,
@@ -74,17 +69,13 @@ export default {
                 }
               )
 
-              const cookieName = process.env.JWT_COOKIE_NAME || "SDK_USER_COOKIE"
-
-              const cookieLifetime = process.env.JWT_LIFETIME || 604800
-
               // save cookie
               cookies().set({
                 name: cookieName,
                 value: cookieToken,
                 httpOnly: true,
                 path: "/",
-                maxAge: decodedJwt.exp,
+                maxAge: cookieLifetime,
                 sameSite: "strict",
                 secure: process.env.NODE_ENV === "production",
               })

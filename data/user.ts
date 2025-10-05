@@ -61,5 +61,29 @@ export const getUser = async () => {
     return result
 
     // return user data
-  } catch (error) {}
+  } catch (error) {
+    console.error("getUser() error:", error)
+    return null
+  }
+}
+
+export const getAccessToken = async () => {
+  const cookieStore = cookies()
+  const cookieName = process.env.JWT_COOKIE_NAME || "SDK_USER_COOKIE"
+  const jwtSecret = process.env.JWT_SECRET || ""
+
+  const cookie = cookieStore.get(cookieName)
+  if (!cookie) return null
+
+  try {
+    // Cookie entschlüsseln
+    const decoded = verify(cookie.value, jwtSecret) as { accessToken: string }
+
+    // Access Token extrahieren
+    const accessToken = decoded.accessToken
+    return accessToken
+  } catch (err) {
+    console.error("Ungültiger Cookie:", err)
+    return null
+  }
 }

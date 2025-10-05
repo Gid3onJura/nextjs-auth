@@ -8,12 +8,15 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { de } from "date-fns/locale"
+import { de, ro } from "date-fns/locale"
 import { format } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuthCheck } from "@/hooks/useAuthCheck"
+import { useRouter } from "next/navigation"
+import { logout } from "@/actions/logout"
 
 type Event = {
-  eventid: string
+  id: string
   deadline: string
   description: string
   eventdate: string
@@ -37,21 +40,31 @@ const HomePage = () => {
   const [newOption, setNewOption] = useState("")
   const [events, setEvents] = useState<Event[]>([])
 
+  const isAuthenticated = useAuthCheck()
+
+  const router = useRouter()
+
   // --- Events laden ---
   useEffect(() => {
-    loadEvents()
-  }, [])
+    if (isAuthenticated) {
+      loadEvents()
+    }
+  }, [isAuthenticated])
 
   const loadEvents = async () => {
     try {
       const url = "/api/events"
-      const response = await fetch(url, {
-        method: "GET",
-      })
+      const response = await fetch(url, { method: "GET" })
       const result = await response.json()
+
+      if (result && result.error) {
+        throw new Error(result.error)
+      }
+
       setEvents(result)
     } catch (err) {
       console.error("Fehler beim Laden der Events:", err)
+      return []
     }
   }
 
@@ -107,7 +120,7 @@ const HomePage = () => {
   const handleDelete = async (id: string) => {
     try {
       await fetch(`/api/events/${id}`, { method: "DELETE" })
-      setEvents((prev) => prev.filter((e) => e.eventid !== id))
+      setEvents((prev) => prev.filter((e) => e.id !== id))
     } catch (err) {
       console.error("Fehler beim Löschen:", err)
     }
@@ -256,18 +269,19 @@ const HomePage = () => {
 
           <ul className="space-y-3">
             {events.map((event) => (
-              <li key={event.eventid} className="border rounded-lg p-3 flex justify-between items-start bg-card">
+              <li key={event.id} className="border rounded-lg p-3 flex justify-between items-start bg-card">
                 <div className="space-y-1">
                   <p className="font-semibold">{event.description}</p>
                   <p className="text-sm text-muted-foreground">
-                    {event.eventtype} – {new Date(event.eventdatetimefrom).toLocaleString("de-DE")} bis{" "}
-                    {new Date(event.eventdatetimeto).toLocaleString("de-DE")}
+                    {event.eventtype} – {format(new Date(event.eventdatetimefrom), "dd.MM.yyyy HH:mm", { locale: de })}{" "}
+                    bis {format(new Date(event.eventdatetimeto), "dd.MM.yyyy HH:mm", { locale: de })}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Anmeldeschluss: {event.deadline ? new Date(event.deadline).toLocaleString("de-DE") : "-"}
+                    Anmeldeschluss:{" "}
+                    {event.deadline ? format(new Date(event.deadline), "dd.MM.yyyy HH:mm", { locale: de }) : "-"}
                   </p>
                 </div>
-                <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(event.eventid)}>
+                <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(event.id)}>
                   <X className="h-4 w-4" />
                 </Button>
               </li>
