@@ -51,6 +51,18 @@ const HomePage = () => {
     }
   }, [isAuthenticated])
 
+  const resetFormular = () => {
+    setName("")
+    setStartDate(undefined)
+    setStartTime("")
+    setEndDate(undefined)
+    setEndTime("")
+    setDeadline(undefined)
+    setDeadlineTime("")
+    setNewOption("")
+    setOptions([])
+  }
+
   const loadEvents = async () => {
     try {
       const url = "/api/events"
@@ -85,6 +97,7 @@ const HomePage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    const url = "/api/events"
     const payload = {
       description: name,
       eventtype: type,
@@ -95,30 +108,21 @@ const HomePage = () => {
       options: options,
     }
 
-    console.log("====================================")
-    console.log(payload)
-    console.log("====================================")
+    try {
+      const response = await fetch(url, { method: "POST", body: JSON.stringify(payload) })
 
-    // try {
-    //   const res = await fetch(process.env.API_BASE_URL + "/event", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(payload),
-    //   })
-    //   const created = await res.json()
-    //   setEvents((prev) => [...prev, created])
-    //   // Formular zurücksetzen
-    //   setName("")
-    //   setStartDate(undefined)
-    //   setStartTime("")
-    //   setEndDate(undefined)
-    //   setEndTime("")
-    //   setDeadline(undefined)
-    //   setDeadlineTime("")
-    //   setOptions([])
-    // } catch (err) {
-    //   console.error("Fehler beim Erstellen des Events:", err)
-    // }
+      const createdEvent = await response.json()
+
+      if (createdEvent && createdEvent.error) {
+        throw new Error(createdEvent.error)
+      }
+
+      setEvents((prev) => [...prev, createdEvent as Event])
+
+      resetFormular()
+    } catch (err) {
+      console.error("Fehler beim Erstellen des Events:", err)
+    }
   }
 
   // --- Event löschen ---
@@ -159,7 +163,7 @@ const HomePage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="seminar">Seminar</SelectItem>
-                <SelectItem value="training">Training</SelectItem>
+                {/* <SelectItem value="training">Training</SelectItem> */}
                 <SelectItem value="other">Sonstige Veranstaltung</SelectItem>
               </SelectContent>
             </Select>

@@ -6,6 +6,7 @@ const API_KEY = process.env.API_KEY // serverseitig verfügbar
 
 export async function GET() {
   const accessToken = await getAccessToken()
+  let data = null
 
   try {
     const res = await fetch(`${API_BASE_URL}/event`, {
@@ -16,7 +17,11 @@ export async function GET() {
         Authorization: `Bearer ${accessToken}`,
       },
     })
-    const data = await res.json()
+
+    if (res.ok) {
+      data = await res.json()
+    }
+
     return NextResponse.json(data)
   } catch (err) {
     console.log(err)
@@ -25,11 +30,18 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const accessToken = await getAccessToken()
+
   try {
     const body = await req.json()
+
     const res = await fetch(`${API_BASE_URL}/event`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(API_KEY ? { "api-key": API_KEY } : {}),
+        Authorization: `Bearer ${accessToken}`,
+      },
       body: JSON.stringify(body),
     })
     const data = await res.json()
