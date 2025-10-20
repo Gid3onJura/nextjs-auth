@@ -8,7 +8,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { de, ro } from "date-fns/locale"
+import { de } from "date-fns/locale"
 import { format } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuthCheck } from "@/hooks/useAuthCheck"
@@ -24,7 +24,13 @@ type Event = {
   eventdatetimeto: string
   eventyear: string
   eventtype: string
-  options: string[]
+  options: Option[]
+}
+
+type Option = {
+  label: string
+  type: "number" | "string" | "boolean"
+  slug: string
 }
 
 const HomePage = () => {
@@ -36,8 +42,10 @@ const HomePage = () => {
   const [endTime, setEndTime] = useState("")
   const [deadline, setDeadline] = useState<Date | undefined>()
   const [deadlineTime, setDeadlineTime] = useState("")
-  const [options, setOptions] = useState<string[]>([])
+  const [options, setOptions] = useState<Option[]>([])
   const [newOption, setNewOption] = useState("")
+  const [optionType, setOptionType] = useState<"number" | "string" | "boolean">("string")
+  const [optionSlug, setOptionSlug] = useState("")
   const [events, setEvents] = useState<Event[]>([])
 
   const isAuthenticated = useAuthCheck()
@@ -61,6 +69,8 @@ const HomePage = () => {
     setDeadlineTime("")
     setNewOption("")
     setOptions([])
+    setOptionSlug("")
+    setOptionType("string")
   }
 
   const loadEvents = async () => {
@@ -82,15 +92,17 @@ const HomePage = () => {
 
   // --- Optionen ---
   const handleAddOption = () => {
-    const trimmed = newOption.trim()
-    if (trimmed && !options.includes(trimmed)) {
-      setOptions([...options, trimmed])
-      setNewOption("")
-    }
+    if (!newOption.trim() || !optionSlug.trim()) return
+
+    setOptions((prev) => [...prev, { label: newOption.trim(), type: optionType, slug: optionSlug.trim() }])
+
+    setNewOption("")
+    setOptionSlug("")
+    setOptionType("string")
   }
 
-  const handleRemoveOption = (option: string) => {
-    setOptions(options.filter((o) => o !== option))
+  const handleRemoveOption = (slug: string) => {
+    setOptions((prev) => prev.filter((opt) => opt.slug !== slug))
   }
 
   // --- Event hinzufügen ---
@@ -184,10 +196,10 @@ const HomePage = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="p-0">
-                  <Calendar mode="single" selected={startDate} onSelect={setStartDate} locale={de} />
+                  <Calendar required mode="single" selected={startDate} onSelect={setStartDate} locale={de} />
                 </PopoverContent>
               </Popover>
-              <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+              <Input required type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
             </div>
 
             <div className="space-y-2">
@@ -203,10 +215,10 @@ const HomePage = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="p-0">
-                  <Calendar mode="single" selected={endDate} onSelect={setEndDate} locale={de} />
+                  <Calendar required mode="single" selected={endDate} onSelect={setEndDate} locale={de} />
                 </PopoverContent>
               </Popover>
-              <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+              <Input required type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
             </div>
           </div>
 
@@ -225,6 +237,21 @@ const HomePage = () => {
                   }
                 }}
               />
+              <Select value={optionType} onValueChange={(val) => setOptionType(val as "number" | "string")}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Typ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="string">String</SelectItem>
+                  <SelectItem value="number">Zahl</SelectItem>
+                  <SelectItem value="boolean">Checkbox</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                placeholder="Slug (z. B. dinner_count)"
+                value={optionSlug}
+                onChange={(e) => setOptionSlug(e.target.value)}
+              />
               <Button type="button" variant="secondary" onClick={handleAddOption}>
                 +
               </Button>
@@ -233,9 +260,14 @@ const HomePage = () => {
             {options.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {options.map((option) => (
-                  <li key={option} className="flex items-center justify-between bg-muted ps-3 rounded-md">
-                    <span>{option}</span>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveOption(option)}>
+                  <li key={option.slug} className="flex items-center justify-between bg-muted ps-3 rounded-md">
+                    <div className="flex flex-col py-2">
+                      <span className="font-medium">{option.label}</span>
+                      <span className="text-xs text-muted-foreground">
+                        Typ: {option.type} • Slug: {option.slug}
+                      </span>
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveOption(option.slug)}>
                       <X className="h-4 w-4" />
                     </Button>
                   </li>
@@ -259,10 +291,10 @@ const HomePage = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="p-0">
-                  <Calendar mode="single" selected={deadline} onSelect={setDeadline} locale={de} />
+                  <Calendar required mode="single" selected={deadline} onSelect={setDeadline} locale={de} />
                 </PopoverContent>
               </Popover>
-              <Input type="time" value={deadlineTime} onChange={(e) => setDeadlineTime(e.target.value)} />
+              <Input required type="time" value={deadlineTime} onChange={(e) => setDeadlineTime(e.target.value)} />
             </div>
           </div>
 
@@ -296,7 +328,9 @@ const HomePage = () => {
                       <p className="text-xs font-semibold text-muted-foreground">Optionen:</p>
                       <ul className="ml-3 list-disc text-xs text-muted-foreground">
                         {event.options.map((opt: any) => (
-                          <li key={opt.id}>{opt.description}</li>
+                          <li key={opt.id}>
+                            {opt.description} - {opt.type} - {opt.slug}
+                          </li>
                         ))}
                       </ul>
                     </div>
