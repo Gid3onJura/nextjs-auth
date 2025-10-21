@@ -237,7 +237,7 @@ const HomePage = () => {
                   }
                 }}
               />
-              <Select value={optionType} onValueChange={(val) => setOptionType(val as "number" | "string")}>
+              <Select value={optionType} onValueChange={(val) => setOptionType(val as "number" | "string" | "boolean")}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder="Typ" />
                 </SelectTrigger>
